@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima da Região Sul - Jogo e Vídeo Explicativo</title>
+    <style>
+        :root {
+            --primary: #1e3d59;
+            --secondary: #17b978;
+            --accent: #ff6e40;
+            --bg: #f5f7fa;
+            --text: #333333;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3d59, #17b978);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        nav button:hover, nav button.active {
+            color: var(--secondary);
+            border-bottom: 3px solid var(--secondary);
+            background: rgba(23, 185, 120, 0.05);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            font-size: 1.6rem;
+            border-left: 4px solid var(--secondary);
+            padding-left: 10px;
+        }
+
+        p, ul {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        /* Estilos do Vídeo / Canvas */
+        .video-container {
+            text-align: center;
+        }
+
+        canvas {
+            background: #0f172a;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 1rem auto;
+        }
+
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Estilos do Quiz */
+        .quiz-box {
+            margin-top: 1rem;
+        }
+
+        .question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-btn {
+            background: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #e2e8f0;
+            border-color: var(--primary);
+        }
+
+        .option-btn.correct {
+            background: #d1fae5 !important;
+            border-color: var(--secondary) !important;
+            color: #065f46;
+        }
+
+        .option-btn.incorrect {
+            background: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b;
+        }
+
+        .btn-action {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #12945d;
+        }
+
+        /* Estilos do Minijogo */
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .drop-zone {
+            background: #f8fafc;
+            border: 2px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 1.5rem;
+            min-height: 200px;
+            text-align: center;
+        }
+
+        .drop-zone h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .items-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .draggable-item:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Explorando o Clima da Região Sul</h1>
+        <p>Aprenda, assista ao vídeo animado, teste seus conhecimentos e jogue!</p>
+    </header>
+
+    <nav>
+        <button class="active" onclick="switchTab('guia', event)">📖 Guia Interativo</button>
+        <button onclick="switchTab('video', event)">🎥 Vídeo Explicativo</button>
+        <button onclick="switchTab('quiz', event)">❓ Quiz do Sul</button>
+        <button onclick="switchTab('jogo', event)">🎮 Minijogo</button>
+    </nav>
+
+    <div class="container">
+        <!-- GUIA INTERATIVO -->
+        <div id="guia" class="tab-content active">
+            <h2>O Clima Subtropical da Região Sul</h2>
+            <p>A Região Sul do Brasil (Paraná, Santa Catarina e Rio Grande do Sul) é a única do país situada abaixo do Trópico de Capricórnio (zona temperada do sul). Por causa disso, apresenta características climáticas únicas no território brasileiro:</p>
+            <ul>
+                <li><strong>As Quatro Estações Bem Definidas:</strong> Verões quentes e invernos rigorosos, com transições claras na primavera e no outono.</li>
+                <li><strong>Chuvas Bem Distribuídas:</strong> Diferente de outras regiões do Brasil que possuem secas marcadas, no Sul chove durante o ano todo, sem períodos prolongados de estiagem.</li>
+                <li><strong>A Famosa Massa Polar Atlântica (mPA):</strong> No inverno, massas de ar geladas vindas da Antártida entram pelo continente, provocando quedas bruscas de temperatura, geadas e até neve nas áreas serranas (como São Joaquim e Urupema em SC, e Bom Jesus no RS).</li>
+                <li><strong>Vegetação Típica:</strong> Predomínio da Mata de Araucárias (Pinheiro-do-paraná) e dos Campos Sulinos (Pampas).</li>
+            </ul>
+        </div>
+
+        <!-- VÍDEO EXPLICATIVO (ANIMADO) -->
+        <div id="video" class="tab-content video-container">
+            <h2>Simulação Animada: A Chegada da Frente Fria</h2>
+            <p>Observe no painel abaixo como a Massa Polar Atlântica (mPA) se desloca pelo continente e interage com o ar quente, gerando quedas de temperatura e neve na serra.</p>
+            <canvas id="animacaoCanvas" width="700" height="350"></canvas>
+            <div class="video-controls">
+                <button class="btn-action" onclick="reiniciarAnimacao()">Reiniciar Simulação</button>
+            </div>
+        </div>
+
+        <!-- QUIZ -->
+        <div id="quiz" class="tab-content">
+            <h2>Quiz Interativo sobre o Clima Sulista</h2>
+            <div id="quiz-container">
+                <!-- Gerado por JavaScript -->
+            </div>
+        </div>
+
+        <!-- MINIJOGO -->
+        <div id="jogo" class="tab-content">
+            <h2>Minijogo: O que pertence ao Clima do Sul?</h2>
+            <p>Clique nos itens abaixo para colocá-los na caixa correta (Itens do Sul vs. Itens de Outros Climas).</p>
+            
+            <div class="score-board">Pontuação: <span id="game-score">0</span></div>
+            
+            <div class="items-pool" id="pool">
+                <!-- Itens carregados via JS -->
+            </div>
+
+            <div class="game-grid">
+                <div class="drop-zone" onclick="selecionarCaixa('sul')">
+                    <h3>❄️ Clima do Sul / Subtropical</h3>
+                    <div id="zone-sul" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;"></div>
+                </div>
+                <div class="drop-zone" onclick="selecionarCaixa('outro')">
+                    <h3>☀️ Outros Climas (Ex: Equatorial / Deserto)</h3>
+                    <div id="zone-outro" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONTROLE DE ABAS ---
+        function switchTab(tabId, event) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            if(tabId === 'video') {
+                iniciarAnimacao();
+            }
+        }
+
+        // --- VÍDEO EXPLICATIVO EM CANVAS ---
+        const canvas = document.getElementById('animacaoCanvas');
+        const ctx = canvas.getContext('2d');
+        let animFrame;
+        let progresso = 0;
+
+        function desenharCena(p) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fundo (Céu)
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Sol no canto superior esquerdo (enfraquecendo)
+            ctx.beginPath();
+            ctx.arc(80, 70, 30, 0, Math.PI * 2);
+            ctx.fillStyle = '#fbbf24';
+            ctx.fill();
+
+            // Relevo (Serra do Sul)
+            ctx.beginPath();
+            ctx.moveTo(0, 300);
+            ctx.lineTo(150, 250);
+            ctx.lineTo(300, 280);
+            ctx.lineTo(500, 220);
+            ctx.lineTo(700, 300);
+            ctx.lineTo(700, 350);
+            ctx.lineTo(0, 350);
+            ctx.fillStyle = '#065f46';
+            ctx.fill();
+
+            // Massa Polar Atlântica (mPA) movendo-se da direita para a esquerda
+            let posX = canvas.width - (p * 3.5);
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+            ctx.beginPath();
+            ctx.arc(posX, 120, 90, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Textos explicativos dinâmicos
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px Segoe UI';
+            ctx.fillText("Brasil (Região Sul)", 250, 330);
+
+            if (p < 50) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText("Fase 1: Ar tropical predomina, dias amenos.", 30, 30);
+            } else if (p < 120) {
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillText("Fase 2: Avança a Massa Polar Atlântica (mPA) pelo Sul.", 30, 30);
+            } else {
+                ctx.fillStyle = '#93c5fd';
+                ctx.fillText("Fase 3: Queda drástica de temperatura e Neve na serra! ❄️", 30, 30);
+                
+                // Neve caindo
+                ctx.fillStyle = '#ffffff';
+                for(let i=0; i<30; i++) {
+                    let rx = (i * 25 + p * 2) % canvas.width;
+                    let ry = (i * 15 + p * 3) % 250;
+                    ctx.fillRect(rx, ry, 4, 4);
+                }
+            }
+        }
+
+        function loopAnimacao() {
+            progresso += 0.8;
+            if(progresso > 220) progresso = 0;
+            desenharCena(progresso);
+            animFrame = requestAnimationFrame(loopAnimacao);
+        }
+
+        function iniciarAnimacao() {
+            cancelAnimationFrame(animFrame);
+            progresso = 0;
+            loopAnimacao();
+        }
+
+        function reiniciarAnimacao() {
+            progresso = 0;
+        }
+
+        // --- QUIZ INTERATIVO ---
+        const perguntasQuiz = [
+            {
+                pergunta: "Qual é o principal fator responsável pelas temperaturas baixas e geadas no inverno da Região Sul?",
+                opcoes: [
+                    "A proximidade com a Linha do Equador",
+                    "A atuação da Massa Polar Atlântica (mPA)",
+                    "A forte presença de desertos vizinhos",
+                    "Correntes quentes do oceano pacífico"
+                ],
+                correta: 1
+            },
+            {
+                pergunta: "Em relação ao regime de chuvas, qual característica define o clima do Sul?",
+                opcoes: [
+                    "Secas severas de 9 meses por ano",
+                    "Chuvas concentradas unicamente no verão",
+                    "Chuva bem distribuída ao longo de todo o ano",
+                    "Ausência total de precipitações"
+                ],
+                correta: 2
+            },
+            {
+                pergunta: "Qual árvore é símbolo marcante da paisagem e do clima subtropical serrano do Sul?",
+                opcoes: ["Coqueiro", "Cacto", "Araucária (Pinheiro-do-paraná)", "Baobá"],
+                correta: 2
+            }
+        ];
+
+        let perguntaAtual = 0;
+        let pontuacaoQuiz = 0;
+
+        function carregarQuiz() {
+            const container = document.getElementById('quiz-container');
+            if (perguntaAtual >= perguntasQuiz.length) {
+                container.innerHTML = `
+                    <h3>Quiz Finalizado! 🎉</h3>
+                    <p>Você acertou ${pontuacaoQuiz} de ${perguntasQuiz.length} perguntas.</p>
+                    <button class="btn-action" onclick="reiniciarQuiz()">Tentar Novamente</button>
+                `;
+                return;
+            }
+
+            const q = perguntasQuiz[perguntaAtual];
+            let html = `
+                <div class="question">${perguntaAtual + 1}. ${q.pergunta}</div>
+                <div class="options">
+            `;
+
+            q.opcoes.forEach((opcao, index) => {
+                html += `<button class="option-btn" onclick="verificarResposta(${index}, ${q.correta}, this)">${opcao}</button>`;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function verificarResposta(selecionada, correta, botao) {
+            const botoes = document.querySelectorAll('.option-btn');
+            botoes.forEach(b => b.disabled = true);
+
+            if (selecionada === correta) {
+                botao.classList.add('correct');
+                pontuacaoQuiz++;
+            } else {
+                botao.classList.add('incorrect');
+                botoes[correta].classList.add('correct');
+            }
+
+            setTimeout(() => {
+                perguntaAtual++;
+                carregarQuiz();
+            }, 1500);
+        }
+
+        function reiniciarQuiz() {
+            perguntaAtual = 0;
+            pontuacaoQuiz = 0;
+            carregarQuiz();
+        }
+
+        carregarQuiz();
+
+        // --- MINIJOGO DE ASSOCIAÇÃO ---
+        const itensJogo = [
+            { nome: "Casaco de Inverno 🧥", tipo: "sul" },
+            { nome: "Chimarrão 🧉", tipo: "sul" },
+            { nome: "Araucária 🌲", tipo: "sul" },
+            { nome: "Geada na Serra ❄️", tipo: "sul" },
+            { nome: "Cacto do Deserto 🌵", tipo: "outro" },
+            { nome: "Roupa de Praia / Biquíni 🩱", tipo: "outro" }
+        ];
+
+        let itemSelecionadoGlobal = null;
+        let pontuacaoJogo = 0;
+
+        function inicializarMinijogo() {
+            const pool = document.getElementById('pool');
+            pool.innerHTML = '';
+            
+            itensJogo.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'draggable-item';
+                el.innerText = item.nome;
+                el.onclick = () => selecionarItem(item, el);
+                pool.appendChild(el);
+            });
+        }
+
+        function selecionarItem(item, elementoDOM) {
+            document.querySelectorAll('.draggable-item').forEach(el => el.style.border = '1px solid #cbd5e1');
+            elementoDOM.style.border = '2px solid var(--accent)';
+            itemSelecionadoGlobal = { item, elementoDOM };
+        }
+
+        function selecionarCaixa(caixaDestino) {
+            if (!itemSelecionadoGlobal) return;
+
+            const { item, elementoDOM } = itemSelecionadoGlobal;
+            const zoneSul = document.getElementById('zone-sul');
+            const zoneOutro = document.getElementById('zone-outro');
+
+            if (item.tipo === caixaDestino) {
+                pontuacaoJogo += 10;
+                if (caixaDestino === 'sul') zoneSul.appendChild(elementoDOM);
+                else zoneOutro.appendChild(elementoDOM);
+                
+                elementoDOM.style.border = '1px solid #17b978';
+                elementoDOM.onclick = null; // Remove ação após acerto
+            } else {
+                pontuacaoJogo = Math.max(0, pontuacaoJogo - 5);
+                elementoDOM.style.border = '2px solid #ef4444';
+            }
+
+            document.getElementById('game-score').innerText = pontuacaoJogo;
+            itemSelecionadoGlobal = null;
+        }
+
+        inicializarMinijogo();
+    </script>
+</body>
+</html>
